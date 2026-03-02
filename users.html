@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management | IT Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="assets/js/auth.js"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Sidebar (Same as index) -->
+    <aside
+        class="fixed left-0 top-0 h-full w-64 sidebar-glass z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold flex items-center justify-center">
+                <img src="assets/img/logo.png" alt="Jetwing Logo"
+                    class="h-auto max-h-16 w-full object-contain filter drop-shadow-lg">
+            </h1>
+        </div>
+        <nav class="mt-4 px-4 space-y-2">
+            <a href="index.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="grid-outline" class="text-lg"></ion-icon>
+                Dashboard
+            </a>
+            <a href="inventory.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="list-outline" class="text-lg"></ion-icon>
+                Inventory List
+            </a>
+            <a href="stolen.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="alert-circle-outline" class="text-lg"></ion-icon>
+                Stolen Items
+            </a>
+            <a href="add-item.html"
+                class="nav-link admin-only flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="add-circle-outline" class="text-lg"></ion-icon>
+                Add New Asset
+            </a>
+            <a href="export.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="download-outline" class="text-lg"></ion-icon>
+                Reports & Export
+            </a>
+            <a href="users.html" class="nav-link active flex items-center gap-3 p-3 text-sm font-medium">
+                <ion-icon name="people-outline" class="text-lg"></ion-icon>
+                Users Admin
+            </a>
+            <button onclick="auth.logout()"
+                class="w-full flex items-center gap-3 p-3 text-sm font-medium text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all mt-4">
+                <ion-icon name="log-out-outline" class="text-lg"></ion-icon>
+                Logout
+            </button>
+        </nav>
+    </aside>
+
+    <main class="lg:ml-64 p-4 lg:p-8 animate-fade-in max-w-6xl mx-auto">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+                <h2 class="text-3xl font-bold">User Management</h2>
+                <p class="text-gray-400 text-sm">Create and manage accounts for IT inventory staff.</p>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Add New User Form -->
+            <div class="glass-card p-6 rounded-2xl h-fit">
+                <h3 class="text-xl font-bold mb-6">Create New Account</h3>
+                <form id="add-user-form" class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="text-xs text-gray-400 uppercase font-bold px-1">Full Name</label>
+                        <input type="text" id="user-fullname" required placeholder="John Doe"
+                            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs text-gray-400 uppercase font-bold px-1">Username</label>
+                        <input type="text" id="user-username" required placeholder="johndoe"
+                            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs text-gray-400 uppercase font-bold px-1">Password</label>
+                        <input type="password" id="user-password" required placeholder="••••••••"
+                            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs text-gray-400 uppercase font-bold px-1">Role</label>
+                        <select id="user-role" required
+                            class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all appearance-none">
+                            <option value="staff">Staff (View Only)</option>
+                            <option value="admin">Administrator (Full Access)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full btn-primary py-3 rounded-xl font-bold mt-4">Create
+                        Account</button>
+                </form>
+            </div>
+
+            <!-- Users List -->
+            <div class="lg:col-span-2 glass-card p-6 rounded-2xl">
+                <h3 class="text-xl font-bold mb-6">Team Members</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-gray-400 text-xs uppercase border-b border-gray-800">
+                                <th class="py-4 px-6">Username</th>
+                                <th class="py-4 px-6">Role</th>
+                                <th class="py-4 px-6">Joined Date</th>
+                                <th class="py-4 px-6 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body" class="divide-y divide-gray-800/50">
+                            <!-- JS Injection -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function renderUsers() {
+            const users = auth.getAllUsers();
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = '';
+
+            users.forEach(u => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-indigo-500/5 transition-all';
+                row.innerHTML = `
+                        <td class="py-4 px-6 font-bold text-gray-200">${u.username}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-2 py-1 ${u.role === 'admin' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-gray-700 text-gray-300'} rounded text-[10px] font-bold uppercase tracking-wider">
+                                ${u.role}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-sm text-gray-500">${u.created || '-'}</td>
+                        <td class="py-4 px-6 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button onclick="promptChangePassword('${u.username}')" class="p-2 hover:bg-gray-700 rounded text-amber-400" title="Change Password">
+                                    <ion-icon name="key-outline"></ion-icon>
+                                </button>
+                                <button onclick="deleteUser('${u.username}')" class="p-2 hover:bg-gray-700 rounded text-rose-500 ${u.username === 'admin' ? 'hidden' : ''}">
+                                    <ion-icon name="trash-outline"></ion-icon>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function deleteUser(username) {
+            if (confirm(`Delete user ${username}?`)) {
+                auth.deleteUser(username);
+                renderUsers();
+            }
+        }
+
+        function promptChangePassword(username) {
+            const newPass = prompt(`Enter new password for ${username}:`);
+            if (newPass && newPass.trim().length >= 3) {
+                if (auth.updateUserPassword(username, newPass.trim())) {
+                    alert('Password updated successfully!');
+                }
+            } else if (newPass) {
+                alert('Password too short (min 3 chars)');
+            }
+        }
+
+        document.getElementById('add-user-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('user-fullname').value;
+            const username = document.getElementById('user-username').value;
+            const password = document.getElementById('user-password').value;
+            const role = document.getElementById('user-role').value;
+
+            const result = auth.addUser(username, fullName, password, role);
+            if (result.success) {
+                alert('User created successfully!');
+                e.target.reset();
+                renderUsers();
+            } else {
+                alert(result.error || 'Failed to create user');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', renderUsers);
+    </script>
+</body>
+
+</html>

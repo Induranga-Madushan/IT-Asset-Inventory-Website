@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | IT Asset Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+
+<body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-6 radial-bg">
+    <style>
+        .radial-bg {
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent),
+                radial-gradient(circle at bottom left, rgba(6, 182, 212, 0.1), transparent);
+            background-color: #020617;
+        }
+
+        .login-glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+
+    <div class="w-full max-w-md animate-fade-in">
+        <div class="text-center mb-10">
+            <div
+                class="w-20 h-20 bg-indigo-500/10 rounded-3xl mx-auto flex items-center justify-center mb-6 border border-indigo-500/20">
+                <ion-icon name="cube" class="text-4xl text-indigo-400"></ion-icon>
+            </div>
+            <h1
+                class="text-4xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+                AssetPro
+            </h1>
+            <p class="text-gray-400">IT Room Inventory Management</p>
+        </div>
+
+        <form id="login-form" class="login-glass p-8 rounded-3xl shadow-2xl space-y-6">
+            <div class="space-y-2">
+                <label for="username" class="text-sm font-medium text-gray-400 ml-1">Username</label>
+                <div class="relative">
+                    <ion-icon name="person-outline"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></ion-icon>
+                    <input type="text" id="username" required placeholder="admin or user"
+                        class="w-full bg-gray-900/50 border border-gray-800 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all text-white placeholder-gray-600">
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label for="password" class="text-sm font-medium text-gray-400 ml-1">Password</label>
+                <div class="relative">
+                    <ion-icon name="lock-closed-outline"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></ion-icon>
+                    <input type="password" id="password" required placeholder="••••••••"
+                        class="w-full bg-gray-900/50 border border-gray-800 rounded-2xl pl-12 pr-4 py-4 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all text-white placeholder-gray-600">
+                </div>
+            </div>
+
+            <button type="submit"
+                class="btn-primary w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 mt-4 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-indigo-500/25">
+                <ion-icon name="log-in-outline" class="text-xl"></ion-icon>
+                Authenticate
+            </button>
+
+            <!-- QR Code Section -->
+            <div class="mt-8 pt-8 border-t border-gray-700/50 flex flex-col items-center">
+                <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-4">Scan for Mobile Access</p>
+                <div id="qrcode" class="p-3 bg-white rounded-xl shadow-inner scale-75 lg:scale-100"></div>
+                <p class="text-[10px] text-gray-500 mt-3 italic text-center">Version 1.2 • Secured with SSL</p>
+            </div>
+
+            <div id="login-error"
+                class="hidden text-rose-400 text-sm text-center font-medium bg-rose-400/10 py-3 rounded-xl border border-rose-400/20">
+                Invalid username or password
+            </div>
+        </form>
+
+        <div class="mt-10 text-center text-xs text-gray-600 uppercase tracking-widest">
+            Office IT Room Inventory v1.0
+        </div>
+    </div>
+
+    <!-- Check if already logged in -->
+    <script src="assets/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Generate QR Code
+            new QRCode(document.getElementById("qrcode"), {
+                text: "https://induranga-madushan.github.io/IT-Asset-Inventory-Website/index.html",
+                width: 100,
+                height: 100,
+                colorDark: "#111827",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            if (auth.isAuthenticated()) {
+                window.location.href = 'index.html';
+            }
+
+            const loginForm = document.getElementById('login-form');
+            const errorMsg = document.getElementById('login-error');
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const user = document.getElementById('username').value;
+                const pass = document.getElementById('password').value;
+
+                if (auth.login(user, pass)) {
+                    window.location.href = 'index.html';
+                } else {
+                    errorMsg.classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

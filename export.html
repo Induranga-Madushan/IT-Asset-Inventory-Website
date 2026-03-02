@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Export | IT Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <!-- Chart.js for reports -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="assets/js/auth.js"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Sidebar -->
+    <aside
+        class="fixed left-0 top-0 h-full w-64 sidebar-glass z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold flex items-center justify-center">
+                <img src="assets/img/logo.png" alt="Jetwing Logo"
+                    class="h-auto max-h-16 w-full object-contain filter drop-shadow-lg">
+            </h1>
+        </div>
+
+        <nav class="mt-4 px-4 space-y-2">
+            <a href="index.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="grid-outline" class="text-lg"></ion-icon>
+                Dashboard
+            </a>
+            <a href="inventory.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="list-outline" class="text-lg"></ion-icon>
+                Inventory List
+            </a>
+            <a href="stolen.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="alert-circle-outline" class="text-lg"></ion-icon>
+                Stolen Items
+            </a>
+            <a href="add-item.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="add-circle-outline" class="text-lg"></ion-icon>
+                Add New Asset
+            </a>
+            <a href="export.html" class="nav-link active flex items-center gap-3 p-3 text-sm font-medium">
+                <ion-icon name="download-outline" class="text-lg"></ion-icon>
+                Reports & Export
+            </a>
+            <a href="users.html"
+                class="nav-link admin-only flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="people-outline" class="text-lg"></ion-icon>
+                Users Admin
+            </a>
+            <button onclick="auth.logout()"
+                class="w-full flex items-center gap-3 p-3 text-sm font-medium text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all mt-4">
+                <ion-icon name="log-out-outline" class="text-lg"></ion-icon>
+                Logout
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="lg:ml-64 p-4 lg:p-8 animate-fade-in max-w-6xl mx-auto">
+        <header class="mb-8">
+            <h2 class="text-3xl font-bold">Reports & Data Export</h2>
+            <p class="text-gray-400 text-sm">Review your inventory statistics and download reports.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            <!-- Charts -->
+            <div class="glass-card p-6 rounded-2xl">
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <ion-icon name="pie-chart-outline" class="text-indigo-400"></ion-icon>
+                    Asset Distribution
+                </h3>
+                <div class="h-64 relative">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-2xl">
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <ion-icon name="stats-chart-outline" class="text-emerald-400"></ion-icon>
+                    Asset Status
+                </h3>
+                <div class="h-64 relative">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Action Card -->
+        <div
+            class="glass-card p-10 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 border-indigo-500/20 shadow-2xl">
+            <div class="flex-1">
+                <h3 class="text-2xl font-bold mb-2">Export to Excel</h3>
+                <p class="text-gray-400 max-w-md">Download a complete list of all items in MS Excel format for offline
+                    record-keeping and auditing.</p>
+            </div>
+            <button onclick="exportToExcel()"
+                class="btn-primary px-10 py-5 rounded-2xl font-bold text-lg flex items-center gap-3 whitespace-nowrap shadow-xl">
+                <ion-icon name="cloud-download-outline"></ion-icon>
+                Download XLSX
+            </button>
+        </div>
+
+        <!-- Summary Stats Area -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10" id="summary-tiles">
+            <!-- JS Injection -->
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/export.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const stats = inventory.getStats();
+            const assets = inventory.getAllAssets();
+
+            if (assets.length === 0) {
+                // Hide charts if no data
+                return;
+            }
+
+            // Category Chart (Doughnut)
+            const catCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(catCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(stats.byCategory),
+                    datasets: [{
+                        data: Object.values(stats.byCategory),
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#3b82f6'],
+                        borderWidth: 0,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#94a3b8' } }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Status Chart (Bar)
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(stats.byStatus),
+                    datasets: [{
+                        label: 'Assets',
+                        data: Object.values(stats.byStatus),
+                        backgroundColor: ['#10b981', '#6366f1', '#f59e0b', '#ef4444'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

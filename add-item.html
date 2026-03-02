@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Asset | IT Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="assets/js/auth.js"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Sidebar -->
+    <aside
+        class="fixed left-0 top-0 h-full w-64 sidebar-glass z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold flex items-center justify-center">
+                <img src="assets/img/logo.png" alt="Jetwing Logo"
+                    class="h-auto max-h-16 w-full object-contain filter drop-shadow-lg">
+            </h1>
+        </div>
+
+        <nav class="mt-4 px-4 space-y-2">
+            <a href="index.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="grid-outline" class="text-lg"></ion-icon>
+                Dashboard
+            </a>
+            <a href="inventory.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="list-outline" class="text-lg"></ion-icon>
+                Inventory List
+            </a>
+            <a href="stolen.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="alert-circle-outline" class="text-lg"></ion-icon>
+                Stolen Items
+            </a>
+            <a href="add-item.html" class="nav-link active flex items-center gap-3 p-3 text-sm font-medium">
+                <ion-icon name="add-circle-outline" class="text-lg"></ion-icon>
+                Add New Asset
+            </a>
+            <a href="export.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="download-outline" class="text-lg"></ion-icon>
+                Reports & Export
+            </a>
+            <a href="users.html"
+                class="nav-link admin-only flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="people-outline" class="text-lg"></ion-icon>
+                Users Admin
+            </a>
+            <button onclick="auth.logout()"
+                class="w-full flex items-center gap-3 p-3 text-sm font-medium text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all mt-4">
+                <ion-icon name="log-out-outline" class="text-lg"></ion-icon>
+                Logout
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="lg:ml-64 p-4 lg:p-8 animate-fade-in max-w-5xl mx-auto">
+        <header class="mb-8">
+            <div class="flex items-center gap-2 text-gray-400 mb-2">
+                <a href="index.html" class="hover:text-indigo-400">Dashboard</a>
+                <ion-icon name="chevron-forward-outline"></ion-icon>
+                <span id="breadcrumb-text">Add Asset</span>
+            </div>
+            <h2 class="text-3xl font-bold" id="page-title">Register New Asset</h2>
+            <p class="text-gray-400 text-sm">Update office inventory with detailed records.</p>
+        </header>
+
+        <form id="asset-form" class="glass-card p-8 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-20">
+            <input type="hidden" id="asset-id">
+
+            <div class="space-y-2">
+                <label for="asset-code" class="block text-sm font-medium text-gray-400">Asset Code (Optional)</label>
+                <input type="text" id="asset-code" placeholder="e.g. JET-LT-001"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white">
+            </div>
+
+            <div class="space-y-2">
+                <label for="name" class="block text-sm font-medium text-gray-400">Asset Name *</label>
+                <input type="text" id="name" required placeholder="e.g. Dell Latitude 5420"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white">
+            </div>
+
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <label for="category" class="block text-sm font-medium text-gray-400">Category *</label>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="promptNewCategory()"
+                            class="text-xs text-indigo-400 hover:underline">+ Add</button>
+                        <button type="button" onclick="removeSelectedCategory()"
+                            class="text-xs text-rose-400 hover:underline">- Remove</button>
+                    </div>
+                </div>
+                <select id="category" required
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white appearance-none">
+                    <!-- Loaded dynamically -->
+                </select>
+            </div>
+
+            <div class="space-y-2">
+                <label for="department" class="block text-sm font-medium text-gray-400">Department *</label>
+                <select id="department" required
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white appearance-none">
+                    <option value="" disabled selected>Select Department</option>
+                    <option value="Administrative Department">Administrative Department</option>
+                    <option value="Human Resources Department">Human Resources Department</option>
+                    <option value="Information Technology Department">Information Technology Department</option>
+                    <option value="Finance Department">Finance Department</option>
+                    <option value="Marketing Department">Marketing Department</option>
+                    <option value="Enginering Department">Enginering Department</option>
+                    <option value="Sales Department">Sales Department</option>
+                    <option value="Revervation Department">Revervation Department</option>
+                    <option value="E-Commerce Department">E-Commerce Department</option>
+                </select>
+            </div>
+
+            <div class="space-y-2">
+                <label for="serial" class="block text-sm font-medium text-gray-400">Serial Number / IMEI / Tag</label>
+                <input type="text" id="serial" placeholder="Unique identification"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white">
+            </div>
+
+            <div class="space-y-2">
+                <label for="quantity" class="block text-sm font-medium text-gray-400">Quantity *</label>
+                <input type="number" id="quantity" required min="1" value="1"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white">
+            </div>
+
+            <div class="space-y-2">
+                <label for="company" class="block text-sm font-medium text-gray-400">Company Name</label>
+                <input type="text" id="company" placeholder="e.g. Jetwing Hotels"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white">
+            </div>
+
+            <div class="space-y-2">
+                <label for="assigned" class="block text-sm font-medium text-gray-400">Assigned To</label>
+                <input type="text" id="assigned" placeholder="Employee / Department"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white">
+            </div>
+
+            <div class="space-y-2">
+                <label for="received-date" class="block text-sm font-medium text-gray-400">Received Date</label>
+                <input type="date" id="received-date"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white">
+            </div>
+
+            <div class="space-y-2">
+                <label for="dispatched-date" class="block text-sm font-medium text-gray-400">Dispatched Date</label>
+                <input type="date" id="dispatched-date"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white">
+            </div>
+
+            <div class="space-y-2">
+                <label for="status" class="block text-sm font-medium text-gray-400">Current Status *</label>
+                <select id="status" required
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white appearance-none">
+                    <option value="In Use">In Use</option>
+                    <option value="In Stock" selected>In Stock</option>
+                    <option value="In Repair">In Repair</option>
+                    <option value="Broken">Broken</option>
+                </select>
+            </div>
+
+            <div class="space-y-2">
+                <label for="purchase-date" class="block text-sm font-medium text-gray-400">Bill/Purchase Date</label>
+                <input type="date" id="purchase-date"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white">
+            </div>
+
+            <div class="md:col-span-2 space-y-2">
+                <label for="notes" class="block text-sm font-medium text-gray-400">Notes / Remarks</label>
+                <textarea id="notes" rows="3" placeholder="Additional info..."
+                    class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-white"></textarea>
+            </div>
+
+            <div class="md:col-span-2 flex justify-end gap-4 mt-6">
+                <button type="button" onclick="window.history.back()"
+                    class="px-6 py-3 border border-gray-700 rounded-xl text-gray-400 hover:text-white transition-all">Cancel</button>
+                <button type="submit" class="btn-primary px-10 py-3 rounded-xl font-bold flex items-center gap-2">
+                    <ion-icon name="save-outline"></ion-icon>
+                    Confirm & Save
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <script src="assets/js/app.js"></script>
+    <script>
+        function loadCategorySelect() {
+            const select = document.getElementById('category');
+            const cats = inventory.getCategories();
+            select.innerHTML = '<option value="" disabled selected>Select Category</option>';
+            cats.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                select.appendChild(opt);
+            });
+        }
+
+        function promptNewCategory() {
+            const newCat = prompt("Enter new category name:");
+            if (newCat && newCat.trim()) {
+                inventory.addCategory(newCat.trim());
+                loadCategorySelect();
+                document.getElementById('category').value = newCat.trim();
+            }
+        }
+
+        function removeSelectedCategory() {
+            const select = document.getElementById('category');
+            const cat = select.value;
+            if (!cat) return;
+            if (confirm(`Are you sure you want to remove the category "${cat}"?`)) {
+                inventory.removeCategory(cat);
+                loadCategorySelect();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCategorySelect();
+            const form = document.getElementById('asset-form');
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('edit_id');
+
+            if (editId) {
+                const asset = inventory.getAsset(editId);
+                if (asset) {
+                    document.getElementById('page-title').innerText = 'Update Information';
+                    document.getElementById('breadcrumb-text').innerText = 'Edit ' + asset.name;
+                    document.getElementById('asset-id').value = asset.id;
+                    document.getElementById('asset-code').value = asset.assetCode || '';
+                    document.getElementById('name').value = asset.name;
+                    document.getElementById('category').value = asset.category;
+                    document.getElementById('department').value = asset.department || '';
+                    document.getElementById('serial').value = asset.serialNumber || '';
+                    document.getElementById('quantity').value = asset.quantity || 1;
+                    document.getElementById('company').value = asset.company || '';
+                    document.getElementById('assigned').value = asset.assignedTo || '';
+                    document.getElementById('received-date').value = asset.receivedDate || '';
+                    document.getElementById('dispatched-date').value = asset.dispatchedDate || '';
+                    document.getElementById('status').value = asset.status;
+                    document.getElementById('purchase-date').value = asset.purchaseDate || '';
+                    document.getElementById('notes').value = asset.notes || '';
+                }
+            }
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const data = {
+                    assetCode: document.getElementById('asset-code').value,
+                    name: document.getElementById('name').value,
+                    category: document.getElementById('category').value,
+                    department: document.getElementById('department').value,
+                    serialNumber: document.getElementById('serial').value,
+                    quantity: document.getElementById('quantity').value,
+                    company: document.getElementById('company').value,
+                    assignedTo: document.getElementById('assigned').value,
+                    receivedDate: document.getElementById('received-date').value,
+                    dispatchedDate: document.getElementById('dispatched-date').value,
+                    status: document.getElementById('status').value,
+                    purchaseDate: document.getElementById('purchase-date').value,
+                    notes: document.getElementById('notes').value
+                };
+
+                const currentId = document.getElementById('asset-id').value;
+                if (currentId) {
+                    inventory.updateAsset(currentId, data);
+                } else {
+                    inventory.addAsset(data);
+                }
+                window.location.href = 'inventory.html';
+            });
+        });
+    </script>
+</body>
+
+</html>

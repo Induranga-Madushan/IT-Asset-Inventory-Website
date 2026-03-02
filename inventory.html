@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Inventory List | IT Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="assets/js/auth.js"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Sidebar -->
+    <aside
+        class="fixed left-0 top-0 h-full w-64 sidebar-glass z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold flex items-center justify-center">
+                <img src="assets/img/logo.png" alt="Jetwing Logo"
+                    class="h-auto max-h-16 w-full object-contain filter drop-shadow-lg">
+            </h1>
+        </div>
+        <nav class="mt-4 px-4 space-y-2">
+            <a href="index.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="grid-outline" class="text-lg"></ion-icon> Dashboard
+            </a>
+            <a href="inventory.html" class="nav-link active flex items-center gap-3 p-3 text-sm font-medium">
+                <ion-icon name="list-outline" class="text-lg"></ion-icon> Inventory List
+            </a>
+            <a href="stolen.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="alert-circle-outline" class="text-lg"></ion-icon> Stolen Items
+            </a>
+            <a href="add-item.html"
+                class="nav-link admin-only flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="add-circle-outline" class="text-lg"></ion-icon> Add New Asset
+            </a>
+            <a href="export.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="download-outline" class="text-lg"></ion-icon> Reports & Export
+            </a>
+            <a href="users.html"
+                class="nav-link admin-only flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="people-outline" class="text-lg"></ion-icon> Users Admin
+            </a>
+            <button onclick="auth.logout()"
+                class="w-full flex items-center gap-3 p-3 text-sm font-medium text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all mt-4">
+                <ion-icon name="log-out-outline" class="text-lg"></ion-icon> Logout
+            </button>
+        </nav>
+    </aside>
+
+    <main class="lg:ml-64 p-4 lg:p-8 animate-fade-in">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+                <h2 class="text-3xl font-bold">Asset Inventory</h2>
+                <p class="text-gray-400 text-sm">Full control over office IT resources.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Import Label/Input -->
+                <label
+                    class="admin-only cursor-pointer px-5 py-2.5 bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 rounded-xl font-semibold flex items-center gap-2 transition-all">
+                    <ion-icon name="cloud-upload-outline"></ion-icon>
+                    Import
+                    <input type="file" id="excel-import" accept=".xlsx, .xls, .csv" class="hidden"
+                        onchange="importFromExcel(event)">
+                </label>
+                <button onclick="exportToExcel()"
+                    class="px-5 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl font-semibold flex items-center gap-2">
+                    <ion-icon name="download-outline"></ion-icon> Export
+                </button>
+                <a href="add-item.html"
+                    class="admin-only btn-primary px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 shadow-lg">
+                    <ion-icon name="add-outline"></ion-icon> New Asset
+                </a>
+            </div>
+        </header>
+
+        <!-- Filters & Search -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="lg:col-span-2 relative">
+                <ion-icon name="search-outline"
+                    class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl"></ion-icon>
+                <input type="text" id="asset-search" placeholder="Search by name, serial or owner..."
+                    class="w-full bg-gray-800/80 border border-gray-700/50 rounded-xl pl-12 pr-4 py-3 text-white backdrop-blur-sm">
+            </div>
+            <div class="relative">
+                <select id="filter-category"
+                    class="w-full bg-gray-800/80 border border-gray-700/50 rounded-xl px-4 py-3 appearance-none">
+                    <option value="All">All Categories</option>
+                    <!-- Loaded dynamically -->
+                </select>
+                <ion-icon name="chevron-down-outline"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></ion-icon>
+            </div>
+            <div class="relative">
+                <select id="filter-status"
+                    class="w-full bg-gray-800/80 border border-gray-700/50 rounded-xl px-4 py-3 appearance-none">
+                    <option value="All">All Statuses</option>
+                    <option value="In Use">In Use</option>
+                    <option value="In Stock">In Stock</option>
+                    <option value="In Repair">In Repair</option>
+                    <option value="Broken">Broken</option>
+                </select>
+                <ion-icon name="chevron-down-outline"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></ion-icon>
+            </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="glass-card rounded-2xl overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left min-w-[1000px]">
+                    <thead>
+                        <tr
+                            class="bg-gray-800/50 text-gray-400 text-[11px] uppercase tracking-wider border-b border-gray-700">
+                            <th class="py-4 px-6">Asset Details</th>
+                            <th class="py-4 px-6">Department</th>
+                            <th class="py-4 px-6">Company</th>
+                            <th class="py-4 px-6">Received</th>
+                            <th class="py-4 px-6">Dispatched</th>
+                            <th class="py-4 px-6 text-center">Qty</th>
+                            <th class="py-4 px-6">Status</th>
+                            <th class="py-4 px-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-body" class="divide-y divide-gray-800/30">
+                        <!-- JS Injection -->
+                    </tbody>
+                </table>
+                <div id="empty-state"
+                    class="hidden flex flex-col items-center justify-center py-20 text-gray-500 italic">No assets found.
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/export.js"></script>
+    <script>
+        function loadFilters() {
+            const select = document.getElementById('filter-category');
+            const cats = inventory.getCategories();
+            select.innerHTML = '<option value="All">All Categories</option>';
+            cats.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderAssets() {
+            const searchTerm = document.getElementById('asset-search').value.toLowerCase();
+            const catFilter = document.getElementById('filter-category').value;
+            const statusFilter = document.getElementById('filter-status').value;
+            const tbody = document.getElementById('inventory-body');
+            const emptyState = document.getElementById('empty-state');
+
+            const filtered = inventory.getAllAssets().filter(a => {
+                const matchesSearch = a.name.toLowerCase().includes(searchTerm) ||
+                    (a.serialNumber || '').toLowerCase().includes(searchTerm) ||
+                    (a.assetCode || '').toLowerCase().includes(searchTerm) ||
+                    (a.assignedTo || '').toLowerCase().includes(searchTerm);
+                const matchesCat = catFilter === 'All' || a.category === catFilter;
+                const matchesStatus = statusFilter === 'All' || a.status === statusFilter;
+                return matchesSearch && matchesCat && matchesStatus;
+            });
+
+            tbody.innerHTML = '';
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                filtered.forEach(a => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-indigo-500/5 transition-all text-sm';
+                    const statusClass = {
+                        'In Use': 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+                        'In Stock': 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30',
+                        'In Repair': 'text-amber-400 bg-amber-500/10 border-amber-500/30',
+                        'Broken': 'text-rose-400 bg-rose-500/10 border-rose-500/30'
+                    }[a.status] || 'text-gray-400';
+
+                    row.innerHTML = `
+                        <td class="py-5 px-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center text-indigo-400"><ion-icon name="cube-outline"></ion-icon></div>
+                                <div>
+                                    <div class="font-bold text-gray-100">${a.name}</div>
+                                    <div class="text-[10px] text-gray-500 uppercase">${a.assetCode ? `<span class='text-indigo-400'>[${a.assetCode}]</span> ` : ''}${a.category} • ${a.serialNumber || 'No Serial'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-5 px-6 text-gray-300 font-medium">${a.department || '-'}</td>
+                        <td class="py-5 px-6 text-gray-300 font-medium">${a.company || '-'}</td>
+                        <td class="py-5 px-6 text-xs text-gray-500">${a.receivedDate || '-'}</td>
+                        <td class="py-5 px-6 text-xs text-gray-500">${a.dispatchedDate || '-'}</td>
+                        <td class="py-5 px-6 text-center font-bold">${a.quantity || 1}</td>
+                        <td class="py-5 px-6">
+                             <span class="px-2 py-1 rounded-full text-[10px] font-bold border ${statusClass}">${a.status}</span>
+                        </td>
+                        <td class="py-5 px-6 text-right">
+                            <div class="flex justify-end gap-2 ${auth.isAdmin() ? '' : 'hidden'}">
+                                <a href="add-item.html?edit_id=${a.id}" class="p-2 hover:bg-gray-700 rounded text-indigo-400"><ion-icon name="create-outline"></ion-icon></a>
+                                <button onclick="deleteAsset('${a.id}')" class="p-2 hover:bg-gray-700 rounded text-rose-500"><ion-icon name="trash-outline"></ion-icon></button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        function deleteAsset(id) {
+            if (confirm('Delete this asset?')) {
+                inventory.deleteAsset(id);
+                renderAssets();
+            }
+        }
+
+        document.getElementById('asset-search').addEventListener('input', renderAssets);
+        document.getElementById('filter-category').addEventListener('change', renderAssets);
+        document.getElementById('filter-status').addEventListener('change', renderAssets);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFilters();
+            renderAssets();
+        });
+    </script>
+</body>
+
+</html>

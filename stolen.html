@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stolen Items | IT Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="assets/js/auth.js"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <aside
+        class="fixed left-0 top-0 h-full w-64 sidebar-glass z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold flex items-center justify-center">
+                <img src="assets/img/logo.png" alt="Jetwing Logo"
+                    class="h-auto max-h-16 w-full object-contain filter drop-shadow-lg">
+            </h1>
+        </div>
+        <nav class="mt-4 px-4 space-y-2">
+            <a href="index.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="grid-outline" class="text-lg"></ion-icon> Dashboard
+            </a>
+            <a href="inventory.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="list-outline" class="text-lg"></ion-icon> Inventory List
+            </a>
+            <a href="stolen.html" class="nav-link active flex items-center gap-3 p-3 text-sm font-medium">
+                <ion-icon name="alert-circle-outline" class="text-lg"></ion-icon> Stolen Items
+            </a>
+            <a href="add-item.html"
+                class="nav-link admin-only flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="add-circle-outline" class="text-lg"></ion-icon> Add New Asset
+            </a>
+            <a href="export.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="download-outline" class="text-lg"></ion-icon> Reports & Export
+            </a>
+            <a href="users.html"
+                class="nav-link admin-only flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="people-outline" class="text-lg"></ion-icon> Users Admin
+            </a>
+            <button onclick="auth.logout()"
+                class="w-full flex items-center gap-3 p-3 text-sm font-medium text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all mt-4">
+                <ion-icon name="log-out-outline" class="text-lg"></ion-icon> Logout
+            </button>
+        </nav>
+    </aside>
+
+    <main class="lg:ml-64 p-4 lg:p-8 animate-fade-in">
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+                <h2 class="text-3xl font-bold text-rose-400">Stolen Items Tracking</h2>
+                <p class="text-gray-400 text-sm">Security logs for missing or stolen IT equipment.</p>
+            </div>
+            <button onclick="toggleStolenForm()"
+                class="btn-primary admin-only px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 shadow-lg !bg-rose-600 hover:!bg-rose-700">
+                <ion-icon name="warning-outline"></ion-icon> Report Stolen Item
+            </button>
+        </header>
+
+        <!-- Stolen Item Form (Hidden by default) -->
+        <div id="stolen-form-container" class="hidden mb-10 glass-card p-8 rounded-2xl border-rose-500/30">
+            <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                <ion-icon name="add-circle-outline" class="text-rose-400"></ion-icon>
+                Register Stolen Item
+            </h3>
+            <form id="stolen-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="space-y-1">
+                    <label class="text-xs text-gray-400 font-bold uppercase">Asset Code</label>
+                    <input type="text" id="s-asset-code"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs text-gray-400 font-bold uppercase">Item Name</label>
+                    <input type="text" id="s-name" required
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs text-gray-400 font-bold uppercase">Category</label>
+                    <select id="s-category" required
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 appearance-none">
+                        <!-- Loaded from app.js -->
+                    </select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs text-gray-400 font-bold uppercase">Stolen Date</label>
+                    <input type="date" id="s-date" required
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs text-gray-400 font-bold uppercase">Serial / IMEI</label>
+                    <input type="text" id="s-serial"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs text-gray-400 font-bold uppercase">Quantity</label>
+                    <input type="number" id="s-quantity" value="1" min="1"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs text-gray-400 font-bold uppercase">Company</label>
+                    <input type="text" id="s-company"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3">
+                </div>
+                <div class="md:col-span-2 lg:col-span-4 space-y-1">
+                    <label class="text-xs text-gray-400 font-bold uppercase">Remarks / Details</label>
+                    <textarea id="s-remark" rows="2"
+                        class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3"></textarea>
+                </div>
+                <div class="md:col-span-2 lg:col-span-4 flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="toggleStolenForm()"
+                        class="px-6 py-3 text-gray-400 hover:text-white">Cancel</button>
+                    <button type="submit"
+                        class="bg-rose-600 hover:bg-rose-700 px-8 py-3 rounded-xl font-bold transition-all">Report
+                        Loss</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Stolen List Table -->
+        <div class="glass-card rounded-2xl overflow-hidden shadow-2xl border-rose-500/10">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr
+                            class="bg-gray-800/80 text-gray-400 text-[11px] uppercase tracking-wider border-b border-gray-700">
+                            <th class="py-4 px-6">Asset Code</th>
+                            <th class="py-4 px-6">Item / Category</th>
+                            <th class="py-4 px-6">Company</th>
+                            <th class="py-4 px-6">Stolen Date</th>
+                            <th class="py-4 px-6">Serial/IMEI</th>
+                            <th class="py-4 px-6">Qty</th>
+                            <th class="py-4 px-6">Remark</th>
+                            <th class="py-4 px-6 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stolen-body" class="divide-y divide-gray-800/30">
+                        <!-- JS Injection -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="stolen-empty" class="hidden py-20 text-center text-gray-500 italic">No stolen items reported.
+                System clean.</div>
+        </div>
+    </main>
+
+    <script src="assets/js/app.js"></script>
+    <script>
+        function toggleStolenForm() {
+            document.getElementById('stolen-form-container').classList.toggle('hidden');
+        }
+
+        function loadStolenCats() {
+            const select = document.getElementById('s-category');
+            const cats = inventory.getCategories();
+            select.innerHTML = '';
+            cats.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderStolen() {
+            const items = inventory.getAllStolen();
+            const tbody = document.getElementById('stolen-body');
+            const empty = document.getElementById('stolen-empty');
+
+            tbody.innerHTML = '';
+            if (items.length === 0) {
+                empty.classList.remove('hidden');
+            } else {
+                empty.classList.add('hidden');
+                items.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-rose-500/5 group transition-all';
+                    row.innerHTML = `
+                        <td class="py-5 px-6 font-mono text-xs text-indigo-400 font-bold">${item.assetCode || '-'}</td>
+                        <td class="py-5 px-6">
+                            <div class="font-bold text-gray-100">${item.name}</div>
+                            <div class="text-[10px] text-rose-400 uppercase font-bold tracking-tight">${item.category}</div>
+                        </td>
+                        <td class="py-5 px-6 text-sm">${item.company || '-'}</td>
+                        <td class="py-5 px-6 text-sm font-medium text-rose-300">${item.date}</td>
+                        <td class="py-5 px-6 text-[11px] font-mono text-gray-400">${item.serial || '-'}</td>
+                        <td class="py-5 px-6 text-sm">${item.quantity}</td>
+                        <td class="py-5 px-6 text-xs text-gray-500 max-w-[200px] truncate" title="${item.remark}">${item.remark || '-'}</td>
+                        <td class="py-5 px-6 text-right">
+                            <button onclick="deleteStolen('${item.id}')" class="admin-only p-2 hover:bg-rose-500/20 rounded-lg text-rose-500 transition-colors">
+                                <ion-icon name="trash-outline" class="text-lg"></ion-icon>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        function deleteStolen(id) {
+            if (confirm('Delete this record?')) {
+                inventory.deleteStolen(id);
+                renderStolen();
+            }
+        }
+
+        document.getElementById('stolen-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const item = {
+                assetCode: document.getElementById('s-asset-code').value,
+                name: document.getElementById('s-name').value,
+                category: document.getElementById('s-category').value,
+                date: document.getElementById('s-date').value,
+                serial: document.getElementById('s-serial').value,
+                quantity: document.getElementById('s-quantity').value,
+                company: document.getElementById('s-company').value,
+                remark: document.getElementById('s-remark').value
+            };
+            inventory.addStolen(item);
+            e.target.reset();
+            toggleStolenForm();
+            renderStolen();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStolenCats();
+            renderStolen();
+        });
+    </script>
+</body>
+
+</html>

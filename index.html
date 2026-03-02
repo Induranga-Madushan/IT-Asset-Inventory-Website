@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Asset Inventory | Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Ionicons for modern icons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <!-- Auth Logic -->
+    <script src="assets/js/auth.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Sidebar -->
+    <aside
+        class="fixed left-0 top-0 h-full w-64 sidebar-glass z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold flex items-center justify-center">
+                <img src="assets/img/logo.png" alt="Jetwing Logo"
+                    class="h-auto max-h-16 w-full object-contain filter drop-shadow-lg">
+            </h1>
+        </div>
+
+        <nav class="mt-4 px-4 space-y-2">
+            <a href="index.html" class="nav-link active flex items-center gap-3 p-3 text-sm font-medium">
+                <ion-icon name="grid-outline" class="text-lg"></ion-icon>
+                Dashboard
+            </a>
+            <a href="inventory.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="list-outline" class="text-lg"></ion-icon>
+                Inventory List
+            </a>
+            <a href="stolen.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="alert-circle-outline" class="text-lg"></ion-icon>
+                Stolen Items
+            </a>
+            <a href="add-item.html"
+                class="nav-link admin-only flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="add-circle-outline" class="text-lg"></ion-icon>
+                Add New Asset
+            </a>
+            <a href="export.html" class="nav-link flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="download-outline" class="text-lg"></ion-icon>
+                Reports & Export
+            </a>
+            <a href="users.html"
+                class="nav-link admin-only flex items-center gap-3 p-3 text-sm font-medium text-gray-400">
+                <ion-icon name="people-outline" class="text-lg"></ion-icon>
+                Users Admin
+            </a>
+        </nav>
+
+        <div class="absolute bottom-8 left-0 w-full px-6 space-y-4">
+            <button onclick="auth.logout()"
+                class="w-full flex items-center gap-3 p-3 text-sm font-medium text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all">
+                <ion-icon name="log-out-outline" class="text-lg"></ion-icon>
+                Logout
+            </button>
+            <div class="glass-card p-4 rounded-xl text-xs text-gray-400">
+                <p>IT Room Inventory v1.2</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    System Ready
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="lg:ml-64 p-4 lg:p-8 animate-fade-in">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+                <h2 class="text-3xl font-bold">Dashboard</h2>
+                <div class="flex items-center gap-2 text-gray-400 text-sm mt-1">
+                    Welcome back, <span id="user-profile-name" class="text-indigo-400 font-semibold">...</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 admin-only">
+                <a href="add-item.html"
+                    class="btn-primary px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2">
+                    <ion-icon name="add-outline"></ion-icon>
+                    New Asset
+                </a>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="glass-card p-6 rounded-2xl border-t-4 border-indigo-500">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">Total Inventory</h3>
+                    <ion-icon name="cube-outline" class="text-indigo-400 text-xl"></ion-icon>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <p class="text-3xl font-bold" id="stat-total">0</p>
+                    <span class="text-xs text-gray-500" id="stat-quantity">(Qty: 0)</span>
+                </div>
+                <div class="mt-4 flex gap-4 text-xs">
+                    <div class="text-emerald-400">Weekly: <span id="stat-weekly" class="font-bold">0</span></div>
+                    <div class="text-indigo-400">Monthly: <span id="stat-monthly" class="font-bold">0</span></div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 rounded-2xl border-t-4 border-emerald-500">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">In Use</h3>
+                    <ion-icon name="checkmark-circle-outline" class="text-emerald-400 text-xl"></ion-icon>
+                </div>
+                <p class="text-3xl font-bold" id="stat-inuse">0</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-2xl border-t-4 border-amber-500">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">In Stock</h3>
+                    <ion-icon name="archive-outline" class="text-amber-400 text-xl"></ion-icon>
+                </div>
+                <p class="text-3xl font-bold" id="stat-instock">0</p>
+            </div>
+
+            <div class="glass-card p-6 rounded-2xl border-t-4 border-rose-500">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-gray-400 text-sm font-medium uppercase tracking-wider">Stolen Items</h3>
+                    <ion-icon name="alert-outline" class="text-rose-400 text-xl"></ion-icon>
+                </div>
+                <p class="text-3xl font-bold text-rose-400" id="stat-stolen">0</p>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="glass-card p-6 rounded-2xl h-96 flex flex-col items-center overflow-hidden">
+                <h3 class="text-xs font-bold text-gray-400 uppercase self-start mb-2">Category Distribution</h3>
+                <div class="flex-1 w-full relative p-2">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+            <div class="glass-card p-6 rounded-2xl h-96 flex flex-col items-center overflow-hidden">
+                <h3 class="text-xs font-bold text-gray-400 uppercase self-start mb-2">Asset Status Overview</h3>
+                <div class="flex-1 w-full relative p-2">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Category Chart Mock -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Recent Activity -->
+            <div class="lg:col-span-2 glass-card p-6 rounded-2xl overflow-hidden">
+                <h3 class="text-xl font-semibold mb-6">Recently Added Assets</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-800">
+                                <th class="pb-3 px-2">Asset Name</th>
+                                <th class="pb-3 px-2">Category</th>
+                                <th class="pb-3 px-2">Assigned</th>
+                                <th class="pb-3 px-2 text-right">Added On</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-assets-body" class="text-sm divide-y divide-gray-800/50">
+                            <!-- JS Injection -->
+                        </tbody>
+                    </table>
+                    <div id="no-assets-message" class="hidden text-center py-10 text-gray-500">
+                        No assets found. Start by adding some.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Breakout -->
+            <div class="glass-card p-6 rounded-2xl">
+                <h3 class="text-xl font-semibold mb-6">Categories</h3>
+                <div class="space-y-4" id="category-stats-list">
+                    <!-- JS Injection -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const stats = inventory.getStats();
+            const allAssets = inventory.getAllAssets();
+
+            // Stats Update
+            document.getElementById('stat-total').innerText = stats.total;
+            document.getElementById('stat-quantity').innerText = `(Qty: ${stats.totalQuantity})`;
+            document.getElementById('stat-weekly').innerText = stats.weeklyAdded;
+            document.getElementById('stat-monthly').innerText = stats.monthlyAdded;
+            document.getElementById('stat-stolen').innerText = stats.stolenCount;
+
+            document.getElementById('stat-inuse').innerText = stats.byStatus['In Use'] || 0;
+            document.getElementById('stat-instock').innerText = stats.byStatus['In Stock'] || 0;
+
+            // Recent Assets
+            const tbody = document.getElementById('recent-assets-body');
+            const sortedAssets = [...allAssets].sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded)).slice(0, 5);
+
+            if (sortedAssets.length === 0) {
+                document.getElementById('no-assets-message').classList.remove('hidden');
+            } else {
+                sortedAssets.forEach(asset => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-indigo-500/5 transition-colors';
+                    row.innerHTML = `
+                        <td class="py-4 px-2 font-medium">${asset.name}</td>
+                        <td class="py-4 px-2">
+                             <span class="px-2 py-1 bg-gray-800 rounded-md text-xs text-indigo-400 border border-indigo-900/40">${asset.category}</span>
+                        </td>
+                        <td class="py-4 px-2 text-gray-400">${asset.assignedTo || '-'}</td>
+                        <td class="py-4 px-2 text-right text-xs text-gray-500">${new Date(asset.dateAdded).toLocaleDateString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            // Category Chart
+            const catCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(catCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(stats.byCategory),
+                    datasets: [{
+                        data: Object.values(stats.byCategory),
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#94a3b8', font: { size: 10 }, padding: 15 }
+                        }
+                    }
+                }
+            });
+
+            // Status Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(stats.byStatus),
+                    datasets: [{
+                        label: 'Assets',
+                        data: Object.values(stats.byStatus),
+                        backgroundColor: ['#10b981', '#6366f1', '#f59e0b', '#ef4444'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#94a3b8' },
+                            grid: { color: '#1f2937' }
+                        },
+                        x: {
+                            ticks: { color: '#94a3b8' },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Categories List
+            const categoryList = document.getElementById('category-stats-list');
+            Object.entries(stats.byCategory).sort((a, b) => b[1] - a[1]).forEach(([category, count]) => {
+                const item = document.createElement('div');
+                const progress = (count / stats.total) * 100;
+                item.innerHTML = `
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-400">${category}</span>
+                        <span class="font-bold">${count}</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-indigo-500" style="width: ${progress}%"></div>
+                    </div>
+                `;
+                categoryList.appendChild(item);
+            });
+        });
+    </script>
+</body>
+
+</html>
